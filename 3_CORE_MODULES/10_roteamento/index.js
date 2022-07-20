@@ -1,26 +1,28 @@
 const html = require("http");
 const fs = require("fs");
+const url = require('url');
 
 const port = 3000;
 
 const server = html.createServer((req, res) => {
 
-    const urlInfo = require('url').parse(req.url, true);
-    const name = urlInfo.query.name;
+    const q = url.parse(req.url, true);
+    const filename = q.pathname.substring(1);
 
-    if(!name) {
-        fs.readFile("index.html", (err, data) => {
-            res.writeHead(200, {'Content-Type':'text/html'});
-            res.write(data);
-            return res.end();
-        });
-    } else {
-        fs.writeFile("arquivo.txt", name, (err, data) => {
-            res.writeHead(302, {
-                Location: '/',
+    if(filename.includes('html')) {
+        if(fs.existsSync(filename)) {
+            fs.readFile(filename, (err, data) => {
+                res.writeHead(200, {'Content-Type':'text/html'});
+                res.write(data);
+                return res.end();
             });
-            return res.end();
-        })
+        } else {
+            fs.readFile("404.html", (err, data) => {
+                res.writeHead(404, {'Content-Type':'text/html'});
+                res.write(data);
+                return res.end();
+            })
+        }
     }
     
 });
